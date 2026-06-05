@@ -1,37 +1,34 @@
-#include <math.h>
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
-#include <stdbool.h>
-#include <stdint.h>
 
 #define NB_COLS 206
 #define NB_ROWS 49
 
-uint8_t screen[NB_ROWS][NB_COLS];
+char screen[NB_ROWS][NB_COLS];
+char buffer[3 + NB_ROWS * (NB_COLS + 1)];
 
-float A, B, C;
-
-float calculateX(int i, int j, int k){
-  return 0.0f; 
+void display_screen(FILE *out_stream) {
+    for (int i = 0; i < NB_ROWS; i++) {
+        int offset = 3 + i * (NB_COLS + 1);
+        memcpy(&buffer[offset], screen[i], NB_COLS);
+        buffer[offset + NB_COLS] = '\n';
+    }
+    fwrite(buffer, sizeof(char), sizeof(buffer), out_stream);
 }
 
-float calculateY(int i, int j, int k){
-  return 0.0f;
-}
+int main(void) {
+    memset(screen, ' ', sizeof(screen));
+    fputs("\x1B[2J\x1B[?25l", stdout);
+    fflush(stdout);
 
-float calculateZ(int i, int j, int k){
-  return 0.0f;
-}
+    buffer[0] = '\x1B';
+    buffer[1] = '[';
+    buffer[2] = 'H';
 
-int main(){
-  memset(screen, ' ', sizeof(screen));
-  
-  printf("\x1B[2J\x1B[?25l");
-  while(true){
-    printf("\x1B[Hhello world!");
-  }
-  printf("\x1B[2J\x1B[?25h");
+    while (1) {
+        
+        display_screen(stdout);
+    }
 
-  return 0;
+    return 0;
 }
